@@ -101,78 +101,55 @@ class DataTransformer
             foreach (array_keys($value) as $subKey) {
                 $value = $this->processKey($value, $subKey);
             }
+            // attribute values nested below Attribute()
             if (isset($value['Attribute()']) && is_array($value['Attribute()'])) {
                 $data[$key] = new Attribute($value['Attribute()']);
             }
+            // attribute values set alongside Attribute()
             elseif (isset($value['Attribute()']) && is_bool($value['Attribute()'])) {
-              $attribute_array = $value;
-              unset($attribute_array['Attribute()']);
-              $data[$key] = new Attribute($attribute_array);
+              unset($value['Attribute()']);
+              $data[$key] = new Attribute($value);
             }
+            // url values nested below Url()
             elseif (isset($value['Url()']['url'])) {
               $options = isset($value['Url()']['options']) && is_array($value['Url()']['options']) ? $value['Url()']['options'] : [];
               $data[$key] = Url::fromUri($value['Url()']['url'], $options);
             }
+            // url values set alongside Url()
             elseif (isset($value['Url()']) && is_bool($value['Url()']) && isset($value['url'])) {
-              $url = $value['url'];
               $options = isset($value['options']) && is_array($value['options']) ? $value['options'] : [];
-              $data[$key] = Url::fromUri($url, $options);
+              $data[$key] = Url::fromUri($value['url'], $options);
             }
             elseif (isset($value['include()']) && is_array($value['include()']) && isset($value['include()']['pattern'])) {
                 $pattern = $value['include()']['pattern'];
+                // variables alongside include()
+                if (!isset($value['include()']['with']) || !is_array($value['include()']['with'])) {
+                    $with = $value;
+                    unset($with['include()']);
+                }
+                // variables nested under 'with'
+                else {
+                    $with = $value['include()']['with'];
+                }
                 if (is_string($pattern) && isset($this->patternDataStore[$pattern])) {
-                    if (!isset($value['include()']['with']) || !is_array($value['include()']['with'])) {
-                        if (!isset($value['include()']['only'])) {
-                            $patternData = $this->getProcessedPatternSpecificData($pattern);
-                        }
-                        else {
-                            $patternData = array();
-                        }
-                    }
-                    elseif (!isset($value['include()']['only'])) {
-                        $patternData = $this->getProcessedPatternSpecificData($pattern, $value['include()']['with']);
+                    if (!isset($value['include()']['only'])) {
+                        $patternData = $this->getProcessedPatternSpecificData($pattern, $with);
                     }
                     else {
-                        $patternData = $value['include()']['with'];
+                        $patternData = $with;
                     }
                     $data[$key] = $this->renderPattern($pattern, $patternData);
                 }
                 else {
-                  throw new PatternNotFoundException("Could not find pattern '$pattern' to include!");
+                    throw new PatternNotFoundException("Could not find pattern '$pattern' to include!");
                 }
-            }
-            elseif (isset($value['include()']) && is_array($value['include()']) && !isset($value['include()']['with'])) {
-              $pattern = $value['include()']['pattern'];
-              if (is_string($pattern) && isset($this->patternDataStore[$pattern])) {
-                $with = $value;
-                unset ($with['include()']);
-                if (empty($with) || !is_array($with)) {
-                  if (!isset($value['include()']['only'])) {
-                    $patternData = $this->getProcessedPatternSpecificData($pattern);
-                  }
-                  else {
-                    $patternData = array();
-                  }
-                }
-                elseif (!isset($value['include()']['only'])) {
-                  $patternData = $this->getProcessedPatternSpecificData($pattern, $with);
-                }
-                else {
-                  $patternData = $with;
-                }
-                $data[$key] = $this->renderPattern($pattern, $patternData);
-              }
-              else {
-                throw new PatternNotFoundException("Could not find pattern '$pattern' to include!");
-              }
             }
             elseif (isset($value['join()']) && is_array($value['join()'])) {
                 $data[$key] = join($value['join()']);
             }
             elseif (isset($value['join()']) && is_bool($value['join()'])) {
-              $join_array = $value;
-              unset($join_array['join()']);
-              $data[$key] = join($join_array);
+              unset($value['join()']);
+              $data[$key] = join($value);
             }
             else {
                 $data[$key] = $value;
