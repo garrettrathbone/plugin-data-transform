@@ -116,9 +116,9 @@ class DataTransformer
               $data[$key] = Url::fromUri($value['Url()']['url'], $options);
             }
             // url values set alongside Url()
-            elseif (isset($value['Url()']) && is_bool($value['Url()']) && isset($value['url'])) {
+            elseif (isset($value['Url()']) && is_string($value['Url()']) && !empty($value['Url()'])) {
               $options = isset($value['options']) && is_array($value['options']) ? $value['options'] : [];
-              $data[$key] = Url::fromUri($value['url'], $options);
+              $data[$key] = Url::fromUri($value['Url()'], $options);
             }
             elseif (isset($value['include()']) && is_array($value['include()']) && isset($value['include()']['pattern'])) {
                 $pattern = $value['include()']['pattern'];

@@ -36,6 +36,7 @@ If a value contains the name of a pattern in shorthand partials syntax, the plug
 
 Advanced syntax with support for passing variables and disabling access to the default data:
 
+##### Nested
 ```json
 {
     "key": {
@@ -52,9 +53,24 @@ Advanced syntax with support for passing variables and disabling access to the d
 
 In both examples the value of `key` will replaced with the rendered pattern.
 
+##### Parallel
+```json
+{
+    "key": {
+        "include()": {
+            "pattern": "atoms-form-element-label.html",
+            "only": true
+        },
+        "title": "Textfield label"
+    }
+}
+```
+Parallel syntax work similarly to nested, in that `include()` settings are passed in nested under include, but all variables to be used inside `include()` (if `with` is unset) can be on the same level.
+
 
 #### Join text values
 
+##### Nested
 ```json
 {
     "key": {
@@ -68,12 +84,28 @@ In both examples the value of `key` will replaced with the rendered pattern.
     }
 }
 ```
-
 The value of `key` will be replaced with the joined strings. Note that in the example `molecules-comment.html` is the name of a pattern in shorthand partials syntax. These will be replaced with the rendered pattern before the join.
 
 
+##### Parallel
+
+```json
+{
+    "key": {
+        "join()": true,
+        "0": "molecules-comment.html",
+        "1": "<div class=\"indented\">",
+        "2": "molecules-comment.html",
+        "3": "</div>",
+        "4": "molecules-comment.html"
+    }
+}
+```
+Parallel syntax works similarly to nested, except `join()` needs to be set to `true`.
+
 #### Create Drupal `Attribute` objects
 
+##### Nested
 ```json
 {
     "key": {
@@ -89,9 +121,25 @@ The value of `key` will be replaced with the joined strings. Note that in the ex
 
 The value of `key` will be replaced with an [`Attribute` object](https://www.drupal.org/node/2513632).
 
+##### Parallel
+
+```json
+{
+    "key": {
+        "Attribute()": true,
+        "id": ["edit-submit"],
+        "type": ["submit"],
+        "value": ["Submit"],
+        "class": ["button", "button-primary"]
+    }
+}
+```
+Parallel syntax works similarly to nested, except `Attribute()` needs to be set to `true`.
+
 
 #### Create Drupal `Url` objects
 
+##### Nested
 ```json
 {
     "key": {
@@ -110,6 +158,22 @@ The value of `key` will be replaced with an [`Attribute` object](https://www.dru
 ```
 
 The value of `key` will be replaced with an `Url` object. Note that in the example `attributes` will be replaced with an `Attribute` object before the `Url` object is created.
+
+##### Parallel
+```json
+{
+    "key": {
+        "Url()": "http://example.com",
+        "options": {
+            "attributes": {
+                "Attribute()": true,
+                "class": ["link"]
+            }
+        }
+    }
+}
+```
+Parallel syntax works similarly to nested, except `Url()` needs to be set to the url. Options can be passed in optionally alongside `Url()`.
 
 
 ## Global data and includes
